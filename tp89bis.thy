@@ -25,34 +25,34 @@ datatype status = Cancelled | Accepted | Current
 type_synonym transBdd = "(transid * status * (nat option) * (nat option)) list" 
 
 
-
+(* returns true if an element is in a list *)
 fun member :: "'a \<Rightarrow> 'a list \<Rightarrow> bool"
 where
   "member _ [] = False" |
   "member x (h#t) = (if x=h then True else member x t)"
 
-
+(* same for a list of couples when looking among the left part *)
 fun memberLeft :: "'a \<Rightarrow> ('a * 'b) list \<Rightarrow> bool"
 where
   "memberLeft _ [] = False" |
   "memberLeft x ((h,_)#t) = (if x=h then True else memberLeft x t)"
 
 
-
+(* checks that a list of coubles never has the same left element *)
 fun noDoubleLeft :: "('a * 'b) list \<Rightarrow> bool"
 where
   "noDoubleLeft [] = True" |
   "noDoubleLeft ((a, _)#t) = (if memberLeft a t then False else noDoubleLeft t)"
 
 
-
+(* exports the list of validated transactions *)
 fun export :: "transBdd \<Rightarrow> transaction list"
 where
   "export [] = []" |
   "export ((tid, Accepted, Some x, Some y)#t) = (tid, x)#(export t)" |
   "export (_#t) = (export t)"
 
-
+(* finds a transid, its status and the options from a transBdd *)
 fun findTransid :: "transid \<Rightarrow> transBdd \<Rightarrow> (transid * status * (nat option) * (nat option)) option"
 where
   "findTransid _ [] = None" |
@@ -66,9 +66,7 @@ where
   "removeTransid tid ((tid2, s, o1, o2)#t) = (if tid=tid2 then t else (tid2, s, o1, o2)#(removeTransid tid t))"
 
 
-
-
-
+(* options operators *)
 fun maxOption :: "nat \<Rightarrow> nat option \<Rightarrow> nat"
 where
   "maxOption n None = n" |
@@ -79,7 +77,6 @@ fun minOption :: "nat \<Rightarrow> nat option \<Rightarrow> nat"
 where
   "minOption n None = n" |
   "minOption n (Some b) = (if n < b then n else b)"
-
 
 
 fun gteOption :: "nat \<Rightarrow> nat option \<Rightarrow> bool"
@@ -104,11 +101,13 @@ where
   "ltOption n None = True" |
   "ltOption n (Some m) = (n<m)"
 
+(* takes a buyer option, a seller potion and returns true if it is an acceptable transaction *)
 fun isAcceptable :: "((nat option) * (nat option)) \<Rightarrow> bool"
 where
 "isAcceptable (Some x1, Some x2) = (if ((x1 \<ge> x2) \<and> (x1 > 0)) then True else False)" |
 " isAcceptable _ = False"
 
+(* updates a transBdd with a message *)
 fun traiterMessage :: "message \<Rightarrow> transBdd \<Rightarrow> transBdd"
 where
   "traiterMessage (Cancel tid) bdd = 
@@ -145,18 +144,20 @@ where
                                        else bdd) |
       _ \<Rightarrow> bdd ))"
 
+(* updates in an accumulator *)
 fun traiterMessageListAcc :: "message list \<Rightarrow> transBdd \<Rightarrow> transBdd"
 where
 "traiterMessageListAcc [] bdd = bdd" |
 "traiterMessageListAcc (h#t) bdd = traiterMessageListAcc t (traiterMessage h bdd)"
 
+(* constructs the bdd from a message list. head of the list = first message treated *)
 fun traiterMessageList :: "message list \<Rightarrow> transBdd"
 where
 "traiterMessageList l = traiterMessageListAcc l []"
 
 
 
-
+(* Correction properties *)
 lemma prop1 : "\<forall> tid x l . member (tid, x) (export (traiterMessageList l)) \<longrightarrow> (x > 0)"
 quickcheck
 nitpick
