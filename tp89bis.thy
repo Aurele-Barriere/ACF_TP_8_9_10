@@ -172,6 +172,7 @@ quickcheck
 nitpick
 sorry
 
+
 lemma prop4 : "\<forall> tid l . member (Cancel tid) l \<longrightarrow> \<not>memberLeft tid (export (traiterMessageList l))"
 quickcheck
 nitpick
@@ -184,18 +185,25 @@ sorry
 
 lemma prop6 : "\<forall> tid l. memberLeft tid (export(traiterMessageList l)) \<longrightarrow> (\<exists> buyer seller. (member (Pay tid buyer) l) \<and> (member (Ack tid seller) l) \<and> buyer\<ge>seller)"
 quickcheck
+nitpick
 sorry
 
-lemma prop7 : "\<forall> tid l buyerhigh buyerlow. member (Pay tid buyerhigh) l \<longrightarrow> buyerhigh > buyerlow \<longrightarrow> traiterMessage (Pay tid buyerlow) (traiterMessageList l) = traiterMessageList l"
+lemma prop7 : "\<forall> tid l buyerhigh buyerlow t1. 
+              member (Pay tid buyerhigh) l 
+              \<longrightarrow> buyerhigh \<ge> buyerlow 
+              \<longrightarrow> ( (member t1 (export(traiterMessage (Pay tid buyerlow) (traiterMessageList l)))) \<longleftrightarrow> (member t1 (export(traiterMessageList l))))"
 quickcheck
+nitpick
 sorry
 
 lemma prop8 : "\<forall> tid l1 l2 x x2 . member (tid,x) (export(traiterMessageList(l1))) \<longrightarrow> member (tid,x2) (export(traiterMessageList(l1 @ l2))) \<longrightarrow> x=x2"
 quickcheck
+nitpick
 sorry
 
 lemma prop9 : "\<forall> x tid l. member (tid,x) (export(traiterMessageList l)) \<longrightarrow> (member (Pay tid x) l)"
 quickcheck
+nitpick
 sorry
 
 
