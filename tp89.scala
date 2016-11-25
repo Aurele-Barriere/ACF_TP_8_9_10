@@ -1,3 +1,54 @@
+package validator.BarriereHutin
+import bank._
+
+
+// Automatic conversion of bank.message to tp89.messages and Nat to bank.Nat
+object Converter{
+  implicit def bank2message(m:bank.message):tp89.message=
+    m match {
+    case bank.Pay((bank.Nat.Nata(c),(bank.Nat.Nata(m),bank.Nat.Nata(i))),bank.Nat.Nata(p)) => tp89.Pay((Nat.Nata(c),(Nat.Nata(m),Nat.Nata(i))),Nat.Nata(p))
+    case bank.Ack((bank.Nat.Nata(c),(bank.Nat.Nata(m),bank.Nat.Nata(i))),bank.Nat.Nata(p)) => tp89.Ack((Nat.Nata(c),(Nat.Nata(m),Nat.Nata(i))),Nat.Nata(p))
+    case bank.Cancel((bank.Nat.Nata(c),(bank.Nat.Nata(m),bank.Nat.Nata(i)))) => tp89.Cancel((Nat.Nata(c),(Nat.Nata(m),Nat.Nata(i))))
+  }
+  
+  implicit def trans2bankTrans(l:List[((Nat.nat,(Nat.nat,Nat.nat)),Nat.nat)]): List[((bank.Nat.nat,(bank.Nat.nat,bank.Nat.nat)),bank.Nat.nat)]=
+    l match {
+    case Nil => Nil
+    case ((Nat.Nata(c),(Nat.Nata(m),Nat.Nata(i))),Nat.Nata(p))::r => ((bank.Nat.Nata(c),(bank.Nat.Nata(m),bank.Nat.Nata(i))),bank.Nat.Nata(p))::trans2bankTrans(r)
+  }
+}
+
+import Converter._
+
+
+/* The object to complete */ 
+class ConcreteValidator extends TransValidator{
+
+
+  
+  // creating a database
+  var db = List.empty[((Nat.nat, (Nat.nat, Nat.nat)),(tp89.status, (Option[Nat.nat], Option[Nat.nat])))]
+  
+	// TODO
+	def process(m:message){
+    db = tp89.traiterMessage(m,db)
+  }
+
+	// TODO
+	def getValidTrans: List[((Nat.nat, (Nat.nat, Nat.nat)),Nat.nat)]= tp89.export(db)
+
+	// TODO
+	def authors= "BarriereHutin"
+}
+
+
+
+
+
+
+
+// imported from isabelle
+/*
 object HOL {
 
 trait equal[A] {
@@ -37,7 +88,7 @@ def less_nat(m: nat, x1: nat): Boolean = (m, x1) match {
 }
 
 } /* object Nat */
-
+*/
 object Product_Type {
 
 def equal_proda[A : HOL.equal, B : HOL.equal](x0: (A, B), x1: (A, B)): Boolean =
@@ -52,7 +103,7 @@ implicit def equal_prod[A : HOL.equal, B : HOL.equal]: HOL.equal[(A, B)] = new
 
 } /* object Product_Type */
 
-object tp89bis {
+object tp89 {
 
 import /*implicits*/ Product_Type.equal_prod, Nat.equal_nat
 
@@ -119,7 +170,7 @@ def findTransid(uu: (Nat.nat, (Nat.nat, Nat.nat)),
 
 def isAcceptable(x0: (Option[Nat.nat], Option[Nat.nat])): Boolean = x0 match {
   case (Some(x1), Some(x2)) =>
-    (if (Nat.less_eq_nat(x2, x1) && Nat.less_nat(Nat.zero_nat(), x1)) true
+    (if (Nat.less_eq_nat(x2, x1) && Nat.less_nat(Nat.zero_nat, x1)) true
       else false)
   case (None, va) => false
   case (v, None) => false
@@ -194,4 +245,5 @@ def traiterMessage(x0: message,
      })
 }
 
-} /* object tp89bis */
+} /* object tp89 */
+
