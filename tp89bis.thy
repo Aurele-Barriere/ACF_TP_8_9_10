@@ -2,10 +2,10 @@ theory tp89bis
 imports Main (* "~~/src/HOL/Library/Code_Target_Nat" *)
 begin
 
-(* 
+
 quickcheck_params [size=6,tester=narrowing,timeout=120]
 nitpick_params [timeout=120]
-*)
+
 
 
 type_synonym transid= "nat*nat*nat"
@@ -159,22 +159,27 @@ where
 
 lemma prop1 : "\<forall> tid x l . member (tid, x) (export (traiterMessageList l)) \<longrightarrow> (x > 0)"
 quickcheck
+nitpick
 sorry
 
 lemma prop2 : "\<forall> l . noDoubleLeft (export (traiterMessageList l))"
 quickcheck
+nitpick
 sorry
 
 lemma prop3 : "\<forall> tid l . member (tid, Cancelled, None, None) (traiterMessage (Cancel tid) (traiterMessageList l))"
 quickcheck
+nitpick
 sorry
 
 lemma prop4 : "\<forall> tid l . member (Cancel tid) l \<longrightarrow> \<not>memberLeft tid (export (traiterMessageList l))"
 quickcheck
+nitpick
 sorry
 
 lemma prop5 : "\<forall> tid l buyer seller. member (Pay tid buyer) l \<longrightarrow> member (Ack tid seller) l \<longrightarrow> buyer \<ge> seller \<longrightarrow> buyer > 0 \<longrightarrow> \<not> member (Cancel tid) l \<longrightarrow> memberLeft tid (export (traiterMessageList l))"
 quickcheck
+nitpick
 sorry
 
 lemma prop6 : "\<forall> tid l. memberLeft tid (export(traiterMessageList l)) \<longrightarrow> (\<exists> buyer seller. (member (Pay tid buyer) l) \<and> (member (Ack tid seller) l) \<and> buyer\<ge>seller)"
