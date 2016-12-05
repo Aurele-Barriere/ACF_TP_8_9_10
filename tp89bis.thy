@@ -2,10 +2,10 @@ theory tp89bis
 imports Main (* "~~/src/HOL/Library/Code_Target_Nat" *)
 begin
 
-
+(*
 quickcheck_params [size=6,tester=narrowing,timeout=120]
 nitpick_params [timeout=120]
-
+*)
 
 
 type_synonym transid= "nat*nat*nat"
@@ -101,7 +101,7 @@ where
   "ltOption n None = True" |
   "ltOption n (Some m) = (n<m)"
 
-(* takes a buyer option, a seller potion and returns true if it is an acceptable transaction *)
+(* takes a buyer option, a seller option and returns true if it is an acceptable transaction *)
 fun isAcceptable :: "((nat option) * (nat option)) \<Rightarrow> bool"
 where
 "isAcceptable (Some x1, Some x2) = (if ((x1 \<ge> x2) \<and> (x1 > 0)) then True else False)" |
@@ -189,13 +189,24 @@ quickcheck
 nitpick
 sorry
 
-lemma prop7 : "\<forall> tid l buyerhigh buyerlow t1. 
+lemma prop7 : "\<forall> tid l l2 buyerhigh buyerlow x. 
               member (Pay tid buyerhigh) l 
               \<longrightarrow> buyerhigh \<ge> buyerlow 
-              \<longrightarrow> ( (member t1 (export(traiterMessage (Pay tid buyerlow) (traiterMessageList l)))) \<longleftrightarrow> (member t1 (export(traiterMessageList l))))"
+              \<longrightarrow> ~(member (Cancel tid) l2)
+              \<longrightarrow> ((member (tid,x) (export(traiterMessageList (l@((Pay tid buyerlow)#l2))))) \<longleftrightarrow> (member (tid,x) (export(traiterMessageList (l@l2)))))"
 quickcheck
 nitpick
 sorry
+
+lemma prop7' : "\<forall> tid l l2 sellerhigh sellerlow x. 
+              member (Ack tid sellerlow) l 
+              \<longrightarrow> sellerhigh \<ge> sellerlow 
+              \<longrightarrow> ~(member (Cancel tid) l2)
+              \<longrightarrow> ((member (tid,x) (export(traiterMessageList (l@((Ack tid sellerhigh)#l2))))) \<longleftrightarrow> (member (tid,x) (export(traiterMessageList (l@l2)))))"
+quickcheck
+nitpick
+sorry
+
 
 lemma prop8 : "\<forall> tid l1 l2 x x2 . member (tid,x) (export(traiterMessageList(l1))) \<longrightarrow> member (tid,x2) (export(traiterMessageList(l1 @ l2))) \<longrightarrow> x=x2"
 quickcheck
